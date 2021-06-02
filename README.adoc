@@ -1,0 +1,32 @@
+:doctype: book
+
+image:https://github.com/toedter/maze-of-delon/workflows/Build/badge.svg["build", link="https://github.com/toedter/maze-of-delon/actions"]
+image:https://img.shields.io/badge/license-MIT-blue.svg["MIT", link="http://toedter.mit-license.org"]
+
+= The Maze of Delon
+
+The Maze of Delon is my first experiment with https://babylonjs.com[Babylon.js] and https://doc.babylonjs.com/divingDeeper/webXR/introToWebXR[Web based Virtual Reality (WebXR)].
+This is in a very early stage, please stay tuned
+
+== Demo
+
+Here you find a demo of the current snapshot:
+
+|===
+| Snapshot |  https://toedter.github.io/maze-of-delom[Maze of Delon Demo]
+|===
+
+== Development Server
+
+Run `npm start` for a dev server. Navigate to http://localhost:8080/.
+The app will automatically reload if you change any of the source files.
+
+== Build
+
+Run `npm run build` to build the project in production mode.
+The build artifacts will be stored in the `dist/` directory.
+
+[[license]]
+== License
+
+MIT, see http://toedter.mit-license.org
