@@ -10,7 +10,11 @@ This is in a very early stage, please stay tuned
 
 == Demo
 
-Here you find a demo of the current snapshot:
+Here you find a demo of the current snapshot.
+You control the camera with the mouse, and the cursor keys.
+
+When you have a Virtual Reality Headset running, you can click on
+the icon in the bottom right corner to enable VR.
 
 |===
 | Snapshot |  https://toedter.github.io/maze-of-delon[Maze of Delon Demo]
