@@ -13,7 +13,7 @@ This is in a very early stage, please stay tuned
 Here you find a demo of the current snapshot:
 
 |===
-| Snapshot |  https://toedter.github.io/maze-of-delom[Maze of Delon Demo]
+| Snapshot |  https://toedter.github.io/maze-of-delon[Maze of Delon Demo]
 |===
 
 == Development Server
