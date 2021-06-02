@@ -48,9 +48,10 @@ export class Game {
     // camera.checkCollisions = true;
     // camera.attachControl(this.canvas, true);
 
-    const camera = new FreeCamera("playerCamera", new Vector3(0, 1, 0), scene);
+    const camera = new FreeCamera("playerCamera", new Vector3(0, 2, 0), scene);
     camera.checkCollisions = true;
-    camera.ellipsoid = new Vector3(1,1,1);
+    camera.minZ = .01;
+    camera.ellipsoid = new Vector3(1, 1, 1);
     camera.applyGravity = true;
     camera.attachControl(this.canvas, true);
 
@@ -132,7 +133,7 @@ export class Game {
     // Create camera as a child of the player.
     const camera = new FreeCamera("playerCamera", new Vector3(0, 1, 0), scene);
     camera.checkCollisions = true;
-    camera.ellipsoid = new Vector3(1,1,1);
+    camera.ellipsoid = new Vector3(1, 1, 1);
     camera.applyGravity = true;
     camera.attachControl(this.canvas, true);
 
