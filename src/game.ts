@@ -58,7 +58,7 @@ export class Game {
     scene.gravity = new Vector3(0, -0.9, 0);
 
     const mazeSize = 45;
-    const camera = new FreeCamera("playerCamera", new Vector3(mazeSize, 2, -(mazeSize + 20)), scene);
+    const camera = new FreeCamera("playerCamera", new Vector3(-10, 1, -(mazeSize + 65)), scene);
     camera.checkCollisions = true;
     camera.minZ = 0.01;
     camera.ellipsoid = new Vector3(1, 1, 1);
@@ -90,8 +90,8 @@ export class Game {
           if (area.tiles[i][y].name === 'Wall') {
             const box = MeshBuilder.CreateBox("box", {width: 4, height: 10, depth: 4});
             box.position.y = 5;
-            box.position.x = i * 4 - 45;
-            box.position.z = y * 4 - 45;
+            box.position.x = i * 4 - 100;
+            box.position.z = y * 4 - 90;
             box.material = boxMat;
             box.checkCollisions = true;
           }
@@ -132,15 +132,12 @@ export class Game {
         controller.onMotionControllerInitObservable.add((motionController) => {
           if (motionController.handness === 'right') {
             const xr_ids = motionController.getComponentIds();
-            console.log('ids: ' + xr_ids);
             const triggerComponent = motionController.getComponent(xr_ids[0]);//xr-standard-trigger
             triggerComponent.onButtonStateChangedObservable.add(() => {
-              console.log("squeeze");
               this.isMoving = triggerComponent.pressed;
             });
             const triggerComponent2 = motionController.getComponent(xr_ids[2]);//xr-standard-trigger
             triggerComponent2.onButtonStateChangedObservable.add(() => {
-              console.log("select");
               this.isMoving = triggerComponent2.pressed;
             });
           }
