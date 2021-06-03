@@ -1,7 +1,5 @@
 import {
-  ActionManager,
   Engine,
-  ExecuteCodeAction,
   FreeCamera,
   HemisphericLight,
   Mesh,
@@ -10,7 +8,7 @@ import {
   StandardMaterial,
   Texture,
   Vector3,
-  Viewport
+  WebXRCamera
 } from "@babylonjs/core";
 
 import amazer, {AmazerBuilder, Area, Emmure, RandomizedPrim} from "amazer";
@@ -21,17 +19,22 @@ import {SkyMaterial} from "@babylonjs/materials";
 export class Game {
   private readonly canvas: HTMLCanvasElement;
   private readonly engine: Engine;
-  private inputs: any;
+
+  private isMoving = false;
+  private xrCamera!: WebXRCamera;
+  private camera!: FreeCamera;
 
   constructor() {
-    this.inputs = {};
     this.canvas = <HTMLCanvasElement>document.getElementById("renderCanvas");
     this.engine = new Engine(this.canvas, true);
     const scene = this.createScene();
 
     // Register a render loop to repeatedly render the scene
-    this.engine.runRenderLoop(function () {
+    this.engine.runRenderLoop(() => {
       scene.render();
+      if (this.isMoving) {
+        this.xrCamera.position = this.xrCamera.getFrontPosition(0.1);
+      }
     });
 
     window.addEventListener("resize", () => {
@@ -39,28 +42,25 @@ export class Game {
     });
   }
 
-  createScene() {
+  createScene(): Scene {
     const scene = new Scene(this.engine);
     scene.collisionsEnabled = true;
     scene.gravity = new Vector3(0, -0.9, 0);
 
-    // const camera = new ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 10, Vector3.Zero(), scene);
-    // camera.checkCollisions = true;
-    // camera.attachControl(this.canvas, true);
-
-    const camera = new FreeCamera("playerCamera", new Vector3(0, 2, 0), scene);
+    const mazeSize = 45;
+    const camera = new FreeCamera("playerCamera", new Vector3(mazeSize, 2, -(mazeSize + 20)), scene);
     camera.checkCollisions = true;
     camera.minZ = .01;
     camera.ellipsoid = new Vector3(1, 1, 1);
     camera.applyGravity = true;
     camera.attachControl(this.canvas, true);
+    this.camera = camera;
 
-    const light = new HemisphericLight("light", new Vector3(-1, 1, 0), scene);
+    new HemisphericLight("light", new Vector3(-1, 1, 0), scene);
 
     const boxMat = new StandardMaterial("boxMat", scene);
     boxMat.diffuseTexture = new Texture(wallTexture, scene);
 
-    const mazeSize = 45;
     const mazeConfig = (<AmazerBuilder>amazer()).withSize({width: mazeSize, height: mazeSize})
       .using(RandomizedPrim)
       .andModifier(Emmure)
@@ -98,62 +98,30 @@ export class Game {
     skyboxMaterial.inclination = 0;
     skyboxMaterial.backFaceCulling = false;
 
-
     // Sky mesh (box)
     const skybox = Mesh.CreateBox("skyBox", 1000.0, scene);
     skybox.material = skyboxMaterial;
 
-    // Players
-    //const player1 = this.createPlayer(scene, new Viewport(0, 0, 1, 0.5), ["w", "a", "s", "d"]);
-
-    // Detect and store inputs in dictionary.
-    scene.actionManager = new ActionManager(scene);
-
-    scene.actionManager.registerAction(
-      new ExecuteCodeAction(ActionManager.OnKeyDownTrigger,
-        (e) => this.inputs[e.sourceEvent.key] = e.sourceEvent.type == "keydown"));
-
-    scene.actionManager.registerAction(
-      new ExecuteCodeAction(ActionManager.OnKeyUpTrigger,
-        (e) => this.inputs[e.sourceEvent.key] = e.sourceEvent.type == "keydown"));
-
-    const xr = scene.createDefaultXRExperienceAsync({
+    scene.createDefaultXRExperienceAsync({
       floorMeshes: [largeGround]
-    });
+    }).then((xr) => {
+      this.xrCamera = xr.input.xrCamera;
+      // const fm = xr.baseExperience.featuresManager;
+      // fm.disableFeature(WebXRMotionControllerTeleportation.Name);
+
+      xr.input.onControllerAddedObservable.add((controller) => {
+        controller.onMotionControllerInitObservable.add((motionController) => {
+          if (motionController.handness === 'right') {
+            const xr_ids = motionController.getComponentIds();
+            const triggerComponent = motionController.getComponent(xr_ids[0]);//xr-standard-trigger
+            triggerComponent.onButtonStateChangedObservable.add(() => {
+              this.isMoving = triggerComponent.pressed;
+            });
+          }
+        });
+      });
+    })
 
     return scene;
-  };
-
-  private createPlayer(scene: Scene, viewport: Viewport, keys: string[]) {
-    // Create player sphere the camera will be inside of.
-    // let player = Mesh.CreateSphere("playerMesh", 4, 0.5, scene);
-    // player.position.y = 1;
-    // player.position.z = -70;
-
-    // Create camera as a child of the player.
-    const camera = new FreeCamera("playerCamera", new Vector3(0, 1, 0), scene);
-    camera.checkCollisions = true;
-    camera.ellipsoid = new Vector3(1, 1, 1);
-    camera.applyGravity = true;
-    camera.attachControl(this.canvas, true);
-
-    //    camera.parent = player;
-    // camera.viewport = viewport;
-    // scene.activeCameras?.push(camera);
-
-    // Register input to move the player.
-    // scene.onBeforeRenderObservable.add((scene, ev) => {
-    //   if (this.inputs[keys[0]])
-    //     player.locallyTranslate(new Vector3(0, 0, 0.2));
-    //   if (this.inputs[keys[2]])
-    //     player.locallyTranslate(new Vector3(0, 0, -0.2));
-    //   if (this.inputs[keys[1]])
-    //     player.rotation.y -= 0.04;
-    //   if (this.inputs[keys[3]])
-    //     player.rotation.y += 0.04;
-    // });
-    //
-    // return player;
-  };
-
+  }
 }
