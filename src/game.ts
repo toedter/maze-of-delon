@@ -31,11 +31,19 @@ export class Game {
     this.engine = new Engine(this.canvas, true);
     const scene = this.createScene();
 
+    const collider = new Mesh('collider', scene);
+    collider.visibility = 0;
+
     // Register a render loop to repeatedly render the scene
     this.engine.runRenderLoop(() => {
       scene.render();
       if (this.isMoving) {
-        this.xrCamera.position = this.xrCamera.getFrontPosition(0.1);
+        collider.position = this.xrCamera.position
+        const position = this.xrCamera.getFrontPosition(0.1);
+        collider.lookAt(position);
+        const forwards = new Vector3(Math.sin(collider.rotation.y) / 8, 0, Math.cos(collider.rotation.y) / 8);
+        forwards.negate();
+        collider.moveWithCollisions(forwards);
       }
     });
 
@@ -113,6 +121,7 @@ export class Game {
       floorMeshes: [largeGround]
     }).then((xr) => {
       this.xrCamera = xr.input.xrCamera;
+
       // const fm = xr.baseExperience.featuresManager;
       // fm.disableFeature(WebXRMotionControllerTeleportation.Name);
 
@@ -120,9 +129,16 @@ export class Game {
         controller.onMotionControllerInitObservable.add((motionController) => {
           if (motionController.handness === 'right') {
             const xr_ids = motionController.getComponentIds();
+            console.log('ids: ' + xr_ids);
             const triggerComponent = motionController.getComponent(xr_ids[0]);//xr-standard-trigger
             triggerComponent.onButtonStateChangedObservable.add(() => {
+              console.log("squeeze");
               this.isMoving = triggerComponent.pressed;
+            });
+            const triggerComponent2 = motionController.getComponent(xr_ids[2]);//xr-standard-trigger
+            triggerComponent2.onButtonStateChangedObservable.add(() => {
+              console.log("select");
+              this.isMoving = triggerComponent2.pressed;
             });
           }
         });
