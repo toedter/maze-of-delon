@@ -1,4 +1,5 @@
 import {
+  Color3,
   Engine,
   FreeCamera,
   HemisphericLight,
@@ -14,7 +15,9 @@ import {
 import amazer, {AmazerBuilder, Area, Emmure, RandomizedPrim} from "amazer";
 
 import wallTexture from "./assets/textures/floor.png"
+import groundHeightMap from "./assets/heightmaps/villageheightmap.png"
 import {SkyMaterial} from "@babylonjs/materials";
+import {GrassProceduralTexture} from "@babylonjs/procedural-textures";
 
 export class Game {
   private readonly canvas: HTMLCanvasElement;
@@ -59,7 +62,11 @@ export class Game {
     new HemisphericLight("light", new Vector3(-1, 1, 0), scene);
 
     const boxMat = new StandardMaterial("boxMat", scene);
-    boxMat.diffuseTexture = new Texture(wallTexture, scene);
+
+    const boxTexture = new Texture(wallTexture, scene);
+    boxTexture.vScale = 2;
+    boxTexture.uScale = 1;
+    boxMat.diffuseTexture = boxTexture;
 
     const mazeConfig = (<AmazerBuilder>amazer()).withSize({width: mazeSize, height: mazeSize})
       .using(RandomizedPrim)
@@ -82,21 +89,24 @@ export class Game {
       }
     }
 
-    //const ground = MeshBuilder.CreateGround("ground", {width: 100, height: 100});
     //Create large ground for valley environment
     const largeGroundMat = new StandardMaterial("largeGroundMat", scene);
-    largeGroundMat.diffuseTexture = new Texture("https://assets.babylonjs.com/environments/valleygrass.png", scene);
+
+    const grassTexture = new GrassProceduralTexture("grassTexture", 5000, scene);
+    largeGroundMat.ambientTexture = grassTexture;
 
     const largeGround = MeshBuilder.CreateGroundFromHeightMap(
-      "largeGround", "https://assets.babylonjs.com/environments/villageheightmap.png",
+      "largeGround", groundHeightMap,
       {width: 500, height: 500, subdivisions: 100, minHeight: 0, maxHeight: 8});
     largeGround.material = largeGroundMat;
     largeGround.checkCollisions = true;
 
 
     const skyboxMaterial = new SkyMaterial("skyMaterial", scene);
-    skyboxMaterial.inclination = 0;
+    skyboxMaterial.inclination = 0.2;
+    skyboxMaterial.azimuth = 0.19;
     skyboxMaterial.backFaceCulling = false;
+    skyboxMaterial.rayleigh = 2;
 
     // Sky mesh (box)
     const skybox = Mesh.CreateBox("skyBox", 1000.0, scene);
