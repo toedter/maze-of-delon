@@ -74,7 +74,7 @@ export class Game {
     const boxMat = new StandardMaterial("boxMat", scene);
 
     const boxTexture = new Texture(wallTexture, scene);
-    boxTexture.vScale = 2;
+    boxTexture.vScale = 1;
     boxTexture.uScale = 1;
     boxMat.diffuseTexture = boxTexture;
 
