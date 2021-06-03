@@ -60,9 +60,12 @@ export class Game {
     const mazeSize = 45;
     const camera = new FreeCamera("playerCamera", new Vector3(mazeSize, 2, -(mazeSize + 20)), scene);
     camera.checkCollisions = true;
-    camera.minZ = .01;
+    camera.minZ = 0.01;
     camera.ellipsoid = new Vector3(1, 1, 1);
     camera.applyGravity = true;
+    camera.speed = 0.2;
+    camera.angularSensibility = 10000;
+
     camera.attachControl(this.canvas, true);
     this.camera = camera;
 
