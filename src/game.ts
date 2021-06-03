@@ -1,5 +1,4 @@
 import {
-  Color3,
   Engine,
   FreeCamera,
   HemisphericLight,
@@ -89,11 +88,9 @@ export class Game {
       }
     }
 
-    //Create large ground for valley environment
+    // Create large ground for valley environment
     const largeGroundMat = new StandardMaterial("largeGroundMat", scene);
-
-    const grassTexture = new GrassProceduralTexture("grassTexture", 5000, scene);
-    largeGroundMat.ambientTexture = grassTexture;
+    largeGroundMat.ambientTexture = new GrassProceduralTexture("grassTexture", 5000, scene);
 
     const largeGround = MeshBuilder.CreateGroundFromHeightMap(
       "largeGround", groundHeightMap,
