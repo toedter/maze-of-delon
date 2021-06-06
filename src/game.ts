@@ -26,6 +26,7 @@ import wallTexture from "./assets/textures/floor.png"
 import groundHeightMap from "./assets/heightmaps/villageheightmap.png"
 import {SkyMaterial} from "@babylonjs/materials";
 import {GrassProceduralTexture} from "@babylonjs/procedural-textures";
+import {FireBall} from "./fireball";
 
 export class Game {
   private readonly canvas: HTMLCanvasElement;
@@ -120,12 +121,6 @@ export class Game {
             box.checkCollisions = true;
             boxes.push(box);
             // shadowGenerator.addShadowCaster(box);
-          } else if (Math.random() > 0.99) {
-            const fireBall = this.createFireball(scene);
-            fireBall.position.y = 2;
-            fireBall.position.x = x * mazeCellSize - 100;
-            fireBall.position.z = y * mazeCellSize - 90;
-            shadowGenerator.addShadowCaster(fireBall);
           }
         }
       }
@@ -157,6 +152,20 @@ export class Game {
     // Sky mesh (box)
     const skybox = Mesh.CreateBox("skyBox", 1000.0, scene);
     skybox.material = skyboxMaterial;
+
+    let fireBallCount = 0;
+    while (fireBallCount < 10) {
+      const x = Math.floor(mazeSize * Math.random());
+      const y = Math.floor(mazeSize * Math.random());
+      if (this.maze.tiles[x][y].name === 'Floor') {
+        const fireBall = this.createFireball(scene);
+        fireBall.position.y = 2;
+        fireBall.position.x = x * mazeCellSize - 100;
+        fireBall.position.z = y * mazeCellSize - 90;
+        shadowGenerator.addShadowCaster(fireBall);
+        fireBallCount += 1;
+      }
+    }
 
     scene.createDefaultXRExperienceAsync({
       floorMeshes: [largeGround]
