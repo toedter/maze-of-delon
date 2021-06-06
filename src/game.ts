@@ -27,6 +27,7 @@ import groundHeightMap from "./assets/heightmaps/villageheightmap.png"
 import {SkyMaterial} from "@babylonjs/materials";
 import {GrassProceduralTexture} from "@babylonjs/procedural-textures";
 import {FireBall} from "./fireball";
+import {Fountain} from "./fountain";
 
 export class Game {
   private readonly canvas: HTMLCanvasElement;
@@ -76,7 +77,7 @@ export class Game {
     const mazeSize = 35;
     const mazeCellSize = 5;
 
-    const camera = new FreeCamera("playerCamera", new Vector3(-10, 1, -(mazeSize + 65)), scene);
+    const camera = new FreeCamera("playerCamera", new Vector3(-10, 3, -(mazeSize + 65)), scene);
     camera.checkCollisions = true;
     camera.minZ = 0.01;
     camera.ellipsoid = new Vector3(1, 1, 1);
@@ -111,16 +112,18 @@ export class Game {
     for (let x = 0; x < (mazeSize + 2); x++) {
       for (let y = 0; y < (mazeSize + 2); y++) {
         if (!(x <= (mazeSize / 2 + 2) && x > mazeSize / 2 && y === 0)) {
-          if (this.maze.tiles[x][y].name === 'Wall') {
-            const box = MeshBuilder.CreateBox("box",
-              {width: mazeCellSize, height: mazeCellSize * 2, depth: mazeCellSize}, scene);
-            box.position.y = mazeCellSize;
-            box.position.x = x * mazeCellSize - 100;
-            box.position.z = y * mazeCellSize - 90;
-            box.material = boxMat;
-            box.checkCollisions = true;
-            boxes.push(box);
-            // shadowGenerator.addShadowCaster(box);
+          if(!(x === (mazeSize+1)/2 && y === (mazeSize+1)/2))       {
+            if (this.maze.tiles[x][y].name === 'Wall') {
+              const box = MeshBuilder.CreateBox("box",
+                {width: mazeCellSize, height: mazeCellSize * 2, depth: mazeCellSize}, scene);
+              box.position.y = mazeCellSize;
+              box.position.x = x * mazeCellSize - 100;
+              box.position.z = y * mazeCellSize - 90;
+              box.material = boxMat;
+              box.checkCollisions = true;
+              boxes.push(box);
+              // shadowGenerator.addShadowCaster(box);
+            }
           }
         }
       }
@@ -164,11 +167,15 @@ export class Game {
       }
     }
 
+    const fountainX = (mazeSize+1)/2 * mazeCellSize - 100;
+    const fountainZ = (mazeSize+1)/2 * mazeCellSize - 90;
+    const fountain = new Fountain(scene, new Vector3(fountainX, 0, fountainZ) );
+
     scene.createDefaultXRExperienceAsync({
-      floorMeshes: [largeGround]
+//      floorMeshes: [largeGround]
     }).then((xr) => {
       this.xrCamera = xr.input.xrCamera;
-      this.xrCamera.position.y = 3;
+      this.xrCamera.position.y = 4;
 
       // const fm = xr.baseExperience.featuresManager;
       // fm.disableFeature(WebXRMotionControllerTeleportation.Name);
