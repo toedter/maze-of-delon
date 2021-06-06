@@ -110,7 +110,7 @@ export class Game {
     const boxes: Mesh[] = [];
     for (let x = 0; x < (mazeSize + 2); x++) {
       for (let y = 0; y < (mazeSize + 2); y++) {
-        if (!(x <= (mazeSize/2 + 2) && x > mazeSize/2                        && y === 0)) {
+        if (!(x <= (mazeSize / 2 + 2) && x > mazeSize / 2 && y === 0)) {
           if (this.maze.tiles[x][y].name === 'Wall') {
             const box = MeshBuilder.CreateBox("box",
               {width: mazeCellSize, height: mazeCellSize * 2, depth: mazeCellSize}, scene);
@@ -158,11 +158,8 @@ export class Game {
       const x = Math.floor(mazeSize * Math.random());
       const y = Math.floor(mazeSize * Math.random());
       if (this.maze.tiles[x][y].name === 'Floor') {
-        const fireBall = this.createFireball(scene);
-        fireBall.position.y = 2;
-        fireBall.position.x = x * mazeCellSize - 100;
-        fireBall.position.z = y * mazeCellSize - 90;
-        shadowGenerator.addShadowCaster(fireBall);
+        const fireBall = new FireBall(scene, this.maze, new Vector3(x * mazeCellSize - 100, 2, y * mazeCellSize - 90))
+        shadowGenerator.addShadowCaster(fireBall.getMesh() );
         fireBallCount += 1;
       }
     }
@@ -216,142 +213,6 @@ export class Game {
     return scene;
   }
 
-  private createFireball(scene: Scene): Mesh {
-    const fireball = MeshBuilder.CreateSphere("fireball", {
-      diameter: 3,
-      segments: 32
-    }, scene);
-    (fireball as any).moveDirection = 'up';
-    // fireball.showBoundingBox = true;
-
-    NodeMaterial.ParseFromSnippetAsync("JN2BSF#29", scene).then((nodeMaterial) => {
-      fireball.material = nodeMaterial;
-      fireball.material.shadowDepthWrapper = new ShadowDepthWrapper(nodeMaterial, scene);
-    });
-
-    scene.registerBeforeRender(() => {
-        let moveDirection = (fireball as any).moveDirection;
-
-        const checkX = (Math.round(fireball.position.z) % 5 === 0 && (Math.abs(Math.round(fireball.position.z) - fireball.position.z)) < 0.02)
-          && (Math.round(fireball.position.x) % 5 === 0 && (Math.abs(Math.round(fireball.position.x) - fireball.position.x)) < 0.02)
-
-        if (checkX) {
-          fireball.position.x = Math.round(fireball.position.x);
-          fireball.position.z = Math.round(fireball.position.z);
-          const mazeX = (fireball.position.x + 100) / 5;
-          const mazeY = (fireball.position.z + 90) / 5;
-
-          const maze = this.maze;
-          const moveDirections: string[] = [];
-          if (moveDirection === 'up') {
-            if (maze.tiles[mazeX][mazeY + 1].name === 'Floor') {
-              moveDirections.push('up');
-            }
-            if (maze.tiles[mazeX + 1][mazeY].name === 'Floor') {
-              moveDirections.push('right');
-            }
-            if (maze.tiles[mazeX - 1][mazeY].name === 'Floor') {
-              moveDirections.push('left');
-            }
-            if (moveDirections.length === 0 && maze.tiles[mazeX][mazeY + 1].name === 'Wall') {
-              moveDirections.push('down');
-            }
-          } else if (moveDirection === 'down') {
-            if (maze.tiles[mazeX][mazeY - 1].name === 'Floor') {
-              moveDirections.push('down');
-            }
-            if (maze.tiles[mazeX + 1][mazeY].name === 'Floor') {
-              moveDirections.push('right');
-            }
-            if (maze.tiles[mazeX - 1][mazeY].name === 'Floor') {
-              moveDirections.push('left');
-            }
-            if (moveDirections.length === 0 && maze.tiles[mazeX][mazeY - 1].name === 'Wall') {
-              moveDirections.push('up');
-            }
-          } else if (moveDirection === 'right') {
-            if (maze.tiles[mazeX + 1][mazeY].name === 'Floor') {
-              moveDirections.push('right');
-            }
-            if (maze.tiles[mazeX][mazeY + 1].name === 'Floor') {
-              moveDirections.push('up');
-            }
-            if (maze.tiles[mazeX][mazeY - 1].name === 'Floor') {
-              moveDirections.push('down');
-            }
-            if (moveDirections.length === 0 && maze.tiles[mazeX + 1][mazeY].name === 'Wall') {
-              moveDirections.push('left');
-            }
-          } else if (moveDirection === 'left') {
-            if (maze.tiles[mazeX - 1][mazeY].name === 'Floor') {
-              moveDirections.push('left');
-            }
-            if (maze.tiles[mazeX][mazeY + 1].name === 'Floor') {
-              moveDirections.push('up');
-            }
-            if (maze.tiles[mazeX][mazeY - 1].name === 'Floor') {
-              moveDirections.push('down');
-            }
-            if (moveDirections.length === 0 && maze.tiles[mazeX - 1][mazeY].name === 'Wall') {
-              moveDirections.push('right');
-            }
-          }
-          if (moveDirections.length > 0) {
-            const rand = Math.floor(Math.random() * moveDirections.length)
-            moveDirection = moveDirections[rand];
-          }
-        }
-
-
-        // else if (moveDirection === 'right' && maze.tiles[mazeX + 2][mazeY].name === 'Wall') {
-        //   moveDirections.push('down';
-        // } else if (moveDirection === 'down' && maze.tiles[mazeX][mazeY + 1].name === 'Wall') {
-        //   if (maze.tiles[mazeX + 1][mazeY + 2].name === 'Floor') {
-        //     moveDirections.push('right';
-        //   } else {
-        //     moveDirections.push('up';
-        //   }
-        //   console.log(maze.tiles[mazeX - 1][mazeY + 1].name + '|' + maze.tiles[mazeX][mazeY + 1].name + '|' + maze.tiles[mazeX + 1][mazeY + 1].name);
-        //   console.log(maze.tiles[mazeX - 1][mazeY].name + '|' + maze.tiles[mazeX][mazeY].name + '|' + maze.tiles[mazeX + 1][mazeY].name);
-        //   console.log(maze.tiles[mazeX - 1][mazeY - 1].name + '|' + maze.tiles[mazeX][mazeY - 1].name + '|' + maze.tiles[mazeX + 1][mazeY - 1].name);
-        //
-        // }
-
-        let moveVector = new Vector3(0, 0, 0);
-        const speed = 0.1;
-        if (moveDirection === 'up') {
-          moveVector = new Vector3(0, 0, speed);
-        } else if (moveDirection === 'right') {
-          moveVector = new Vector3(speed, 0, 0);
-        } else if (moveDirection === 'down') {
-          moveVector = new Vector3(0, 0, -speed);
-        } else if (moveDirection === 'left') {
-          moveVector = new Vector3(-speed, 0, 0);
-        }
-        (fireball as any).moveDirection = moveDirection;
-
-        // fireball.onCollide = () => {
-        //   const rand = Math.random();
-        //   let moveDirection: string;
-        //   if (rand > 0 && rand < 0.25) {
-        //     moveDirections.push('right';
-        //   } else if (rand > 0.25 && rand < 0.5) {
-        //     moveDirections.push('down';
-        //   } else if (rand > 0.5 && rand < 0.75) {
-        //     moveDirections.push('left';
-        //   } else {
-        //     moveDirections.push('up';
-        //   }
-        //   (fireball as any).moveDirections.push(moveDirection;
-        // };
-
-
-        fireball.moveWithCollisions(moveVector);
-      }
-    );
-
-    return fireball;
-  }
 
   private cameraJump(scene: Scene, camera: Camera, direction: number) {
     camera.animations = [];
