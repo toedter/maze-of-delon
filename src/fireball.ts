@@ -2,8 +2,9 @@ import {Mesh, MeshBuilder, NodeMaterial, Scene, ShadowDepthWrapper, Vector3} fro
 import {Area} from "amazer";
 
 export class FireBall {
-  private mesh: Mesh;
+  private readonly mesh: Mesh;
   private moveDirection: string;
+  private static nodeMaterial: NodeMaterial;
 
   constructor(private scene: Scene, private maze: Area, position: Vector3) {
     this.mesh = MeshBuilder.CreateSphere("fireball", {
@@ -13,10 +14,17 @@ export class FireBall {
     this.mesh.position = position;
     this.moveDirection = 'up';
 
-    NodeMaterial.ParseFromSnippetAsync("JN2BSF#29", scene).then((nodeMaterial) => {
-      this.mesh.material = nodeMaterial;
-      this.mesh.material.shadowDepthWrapper = new ShadowDepthWrapper(nodeMaterial, scene);
-    });
+    if (!FireBall.nodeMaterial) {
+      NodeMaterial.ParseFromFileAsync('fireballMaterial', './assets/material/fireballMaterial.json', scene)
+        .then((nodeMaterial) => {
+          this.mesh.material = nodeMaterial;
+          this.mesh.material.shadowDepthWrapper = new ShadowDepthWrapper(nodeMaterial, scene);
+          FireBall.nodeMaterial = nodeMaterial;
+        });
+    } else {
+      this.mesh.material = FireBall.nodeMaterial;
+      this.mesh.material.shadowDepthWrapper = new ShadowDepthWrapper(FireBall.nodeMaterial, scene);
+    }
 
     scene.registerBeforeRender(() => this.move());
   }

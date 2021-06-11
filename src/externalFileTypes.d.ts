@@ -7,4 +7,9 @@ declare module '*.env';
 declare module '*.glb';
 declare module '*.stl';
 
+// sounds
+declare module '*.wav';
+
+// material
+declare module '*.json';
 

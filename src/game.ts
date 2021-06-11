@@ -10,9 +10,7 @@ import {
   HemisphericLight,
   Mesh,
   MeshBuilder,
-  NodeMaterial,
   Scene,
-  ShadowDepthWrapper,
   ShadowGenerator,
   StandardMaterial,
   Texture,
@@ -169,13 +167,13 @@ export class Game {
 
     const fountainX = (mazeSize+1)/2 * mazeCellSize - 100;
     const fountainZ = (mazeSize+1)/2 * mazeCellSize - 90;
-    const fountain = new Fountain(scene, new Vector3(fountainX, 0, fountainZ) );
+    new Fountain(scene, new Vector3(fountainX, 0, fountainZ) );
 
     scene.createDefaultXRExperienceAsync({
 //      floorMeshes: [largeGround]
     }).then((xr) => {
       this.xrCamera = xr.input.xrCamera;
-      this.xrCamera.position.y = 4;
+      this.xrCamera.position.y = 3;
 
       // const fm = xr.baseExperience.featuresManager;
       // fm.disableFeature(WebXRMotionControllerTeleportation.Name);
