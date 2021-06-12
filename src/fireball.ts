@@ -1,10 +1,9 @@
-import {Mesh, MeshBuilder, NodeMaterial, Scene, ShadowDepthWrapper, Vector3} from "@babylonjs/core";
+import {Mesh, MeshBuilder, NodeMaterial, Scene, ShadowDepthWrapper, ShadowGenerator, Vector3} from "@babylonjs/core";
 import {Area} from "amazer";
 
 export class FireBall {
   private readonly mesh: Mesh;
   private moveDirection: string;
-  private static nodeMaterial: NodeMaterial;
 
   constructor(private scene: Scene, private maze: Area, position: Vector3) {
     this.mesh = MeshBuilder.CreateSphere("fireball", {
@@ -13,18 +12,6 @@ export class FireBall {
     });
     this.mesh.position = position;
     this.moveDirection = 'up';
-
-    if (!FireBall.nodeMaterial) {
-      NodeMaterial.ParseFromFileAsync('fireballMaterial', './assets/material/fireballMaterial.json', scene)
-        .then((nodeMaterial) => {
-          this.mesh.material = nodeMaterial;
-          this.mesh.material.shadowDepthWrapper = new ShadowDepthWrapper(nodeMaterial, scene);
-          FireBall.nodeMaterial = nodeMaterial;
-        });
-    } else {
-      this.mesh.material = FireBall.nodeMaterial;
-      this.mesh.material.shadowDepthWrapper = new ShadowDepthWrapper(FireBall.nodeMaterial, scene);
-    }
 
     scene.registerBeforeRender(() => this.move());
   }
@@ -120,5 +107,23 @@ export class FireBall {
 
   getMesh(): Mesh {
     return this.mesh;
+  }
+
+  static createFireballs(maze: Area, mazeCellSize: number, shadowGenerator: ShadowGenerator, scene: Scene): void {
+    NodeMaterial.ParseFromFileAsync('fireballMaterial', './assets/material/fireballMaterial.json', scene)
+      .then((nodeMaterial) => {
+        let fireBallCount = 0;
+        while (fireBallCount < 10) {
+          const x = Math.floor(maze.width * Math.random());
+          const y = Math.floor(maze.height * Math.random());
+          if (maze.tiles[x][y].name === 'Floor') {
+            const fireBall = new FireBall(scene, maze, new Vector3(x * mazeCellSize - 100, 2, y * mazeCellSize - 90))
+            shadowGenerator.addShadowCaster(fireBall.getMesh());
+            fireBall.mesh.material = nodeMaterial;
+            fireBall.mesh.material.shadowDepthWrapper = new ShadowDepthWrapper(nodeMaterial, scene);
+            fireBallCount += 1;
+          }
+        }
+      });
   }
 }

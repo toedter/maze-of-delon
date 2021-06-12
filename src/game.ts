@@ -47,19 +47,21 @@ export class Game {
     const divFps = document.getElementById("fps");
 
     // Register a render loop to repeatedly render the scene
-    this.engine.runRenderLoop(() => {
-      scene.render();
-      if (this.isMoving) {
-        collider.position = this.xrCamera.position
-        const position = this.xrCamera.getFrontPosition(0.1);
-        collider.lookAt(position);
-        const forwards = new Vector3(Math.sin(collider.rotation.y) / 8, 0, Math.cos(collider.rotation.y) / 8);
-        forwards.negate();
-        collider.moveWithCollisions(forwards);
-      }
-      if (divFps) {
-        divFps.innerHTML = this.engine.getFps().toFixed() + " fps";
-      }
+    scene.executeWhenReady(() => {
+      this.engine.runRenderLoop(() => {
+        scene.render();
+        if (this.isMoving) {
+          collider.position = this.xrCamera.position
+          const position = this.xrCamera.getFrontPosition(0.1);
+          collider.lookAt(position);
+          const forwards = new Vector3(Math.sin(collider.rotation.y) / 8, 0, Math.cos(collider.rotation.y) / 8);
+          forwards.negate();
+          collider.moveWithCollisions(forwards);
+        }
+        if (divFps) {
+          divFps.innerHTML = this.engine.getFps().toFixed() + " fps";
+        }
+      })
     });
 
     window.addEventListener("resize", () => {
@@ -75,7 +77,8 @@ export class Game {
     const mazeSize = 35;
     const mazeCellSize = 5;
 
-    const camera = new FreeCamera("playerCamera", new Vector3(-10, 3, -(mazeSize + 65)), scene);
+    const startPosition = new Vector3(-10, 3, -(mazeSize + 65));
+    const camera = new FreeCamera("playerCamera", startPosition , scene);
     camera.checkCollisions = true;
     camera.minZ = 0.01;
     camera.ellipsoid = new Vector3(1, 1, 1);
@@ -83,6 +86,7 @@ export class Game {
     camera.speed = 0.2;
     camera.angularSensibility = 10000;
     camera.attachControl(this.canvas, true);
+
     this.camera = camera;
 
     // this.camera.position = new Vector3(0, 300, 0);
@@ -154,16 +158,7 @@ export class Game {
     const skybox = Mesh.CreateBox("skyBox", 1000.0, scene);
     skybox.material = skyboxMaterial;
 
-    let fireBallCount = 0;
-    while (fireBallCount < 10) {
-      const x = Math.floor(mazeSize * Math.random());
-      const y = Math.floor(mazeSize * Math.random());
-      if (this.maze.tiles[x][y].name === 'Floor') {
-        const fireBall = new FireBall(scene, this.maze, new Vector3(x * mazeCellSize - 100, 2, y * mazeCellSize - 90))
-        shadowGenerator.addShadowCaster(fireBall.getMesh() );
-        fireBallCount += 1;
-      }
-    }
+    FireBall.createFireballs(this.maze, 5, shadowGenerator, scene);
 
     const fountainX = (mazeSize+1)/2 * mazeCellSize - 100;
     const fountainZ = (mazeSize+1)/2 * mazeCellSize - 90;
@@ -214,6 +209,21 @@ export class Game {
           break;
       }
     }, false);
+
+    // // hide/show the Inspector
+    // window.addEventListener("keydown", (event) => {
+    //   // Shift+Ctrl+Alt
+    //   if (event.shiftKey && event.ctrlKey && event.altKey) {
+    //     if (scene.debugLayer.isVisible()) {
+    //       scene.debugLayer.hide();
+    //     } else {
+    //       scene.debugLayer.show();
+    //     }
+    //   }
+    // });
+    // scene.debugLayer.show({
+    //   embedMode: true,
+    // });
 
     return scene;
   }
