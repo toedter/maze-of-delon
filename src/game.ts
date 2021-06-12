@@ -1,12 +1,7 @@
 import {
-  Animation,
-  Camera,
-  CircleEase,
   Color3,
   DirectionalLight,
-  EasingFunction,
   Engine,
-  FreeCamera,
   HemisphericLight,
   Mesh,
   MeshBuilder,
@@ -14,8 +9,7 @@ import {
   ShadowGenerator,
   StandardMaterial,
   Texture,
-  Vector3,
-  WebXRCamera
+  Vector3
 } from "@babylonjs/core";
 
 import amazer, {AmazerBuilder, Area, Emmure, RandomizedPrim} from "amazer";
@@ -26,14 +20,11 @@ import {SkyMaterial} from "@babylonjs/materials";
 import {GrassProceduralTexture} from "@babylonjs/procedural-textures";
 import {FireBall} from "./fireball";
 import {Fountain} from "./fountain";
+import {Player} from "./player";
 
 export class Game {
   private readonly canvas: HTMLCanvasElement;
   private readonly engine: Engine;
-
-  private isMoving = false;
-  private xrCamera!: WebXRCamera;
-  private camera!: FreeCamera;
   private maze!: Area;
 
   constructor() {
@@ -41,23 +32,12 @@ export class Game {
     this.engine = new Engine(this.canvas, true);
     const scene = this.createScene();
 
-    const collider = new Mesh('collider', scene);
-    collider.visibility = 0;
-
     const divFps = document.getElementById("fps");
 
     // Register a render loop to repeatedly render the scene
     scene.executeWhenReady(() => {
       this.engine.runRenderLoop(() => {
         scene.render();
-        if (this.isMoving) {
-          collider.position = this.xrCamera.position
-          const position = this.xrCamera.getFrontPosition(0.1);
-          collider.lookAt(position);
-          const forwards = new Vector3(Math.sin(collider.rotation.y) / 8, 0, Math.cos(collider.rotation.y) / 8);
-          forwards.negate();
-          collider.moveWithCollisions(forwards);
-        }
         if (divFps) {
           divFps.innerHTML = this.engine.getFps().toFixed() + " fps";
         }
@@ -77,17 +57,7 @@ export class Game {
     const mazeSize = 35;
     const mazeCellSize = 5;
 
-    const startPosition = new Vector3(-10, 3, -(mazeSize + 65));
-    const camera = new FreeCamera("playerCamera", startPosition , scene);
-    camera.checkCollisions = true;
-    camera.minZ = 0.01;
-    camera.ellipsoid = new Vector3(1, 1, 1);
-    camera.applyGravity = true;
-    camera.speed = 0.2;
-    camera.angularSensibility = 10000;
-    camera.attachControl(this.canvas, true);
-
-    this.camera = camera;
+    new Player(scene, this.canvas, mazeSize);
 
     // this.camera.position = new Vector3(0, 300, 0);
     // this.camera.target = new Vector3(0, 0, 1);
@@ -164,52 +134,6 @@ export class Game {
     const fountainZ = (mazeSize+1)/2 * mazeCellSize - 90;
     new Fountain(scene, new Vector3(fountainX, 0, fountainZ) );
 
-    scene.createDefaultXRExperienceAsync({
-//      floorMeshes: [largeGround]
-    }).then((xr) => {
-      this.xrCamera = xr.input.xrCamera;
-      this.xrCamera.position.y = 3;
-
-      // const fm = xr.baseExperience.featuresManager;
-      // fm.disableFeature(WebXRMotionControllerTeleportation.Name);
-
-      xr.input.onControllerAddedObservable.add((controller) => {
-        controller.onMotionControllerInitObservable.add((motionController) => {
-          if (motionController.handness === 'right') {
-            const xr_ids = motionController.getComponentIds();
-            const triggerComponent = motionController.getComponent(xr_ids[0]); // xr-standard-trigger
-            triggerComponent.onButtonStateChangedObservable.add(() => {
-              this.isMoving = triggerComponent.pressed;
-            });
-            const triggerComponent2 = motionController.getComponent(xr_ids[3]); // a button
-            triggerComponent2.onButtonStateChangedObservable.add(() => {
-              if (triggerComponent2.pressed) {
-                this.cameraJump(scene, this.xrCamera, 50);
-              } else {
-                this.cameraJump(scene, this.xrCamera, -50);
-              }
-            });
-          }
-        });
-      });
-    })
-
-    window.addEventListener("keydown", (event) => {
-      switch (event.code) {
-        case 'Space':
-          this.cameraJump(scene, camera, 200);
-          break;
-      }
-    }, false);
-
-    window.addEventListener("keyup", (event) => {
-      switch (event.code) {
-        case 'Space':
-          this.cameraJump(scene, camera, -200);
-          break;
-      }
-    }, false);
-
     // // hide/show the Inspector
     // window.addEventListener("keydown", (event) => {
     //   // Shift+Ctrl+Alt
@@ -228,42 +152,16 @@ export class Game {
     return scene;
   }
 
-
-  private cameraJump(scene: Scene, camera: Camera, direction: number) {
-    camera.animations = [];
-
-    const a: Animation = new Animation(
-      "a",
-      "position.y", 20,
-      Animation.ANIMATIONTYPE_FLOAT,
-      Animation.ANIMATIONLOOPMODE_CYCLE);
-
-    // Animation keys
-    const keys = [];
-    keys.push({frame: 0, value: camera.position.y});
-    keys.push({frame: 10, value: camera.position.y + direction});
-
-    a.setKeys(keys);
-
-    const easingFunction = new CircleEase();
-    easingFunction.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
-    a.setEasingFunction(easingFunction);
-
-    camera.animations.push(a);
-
-    scene.beginAnimation(camera, 0, 20, false);
-  }
-
   private getShadowGenerator(scene: Scene): ShadowGenerator {
-    // light1
-    const light1 = new DirectionalLight("dir01", new Vector3(-0.2, -1, -0.2), scene);
-    light1.position = new Vector3(-8, 50, 0);
-    light1.intensity = 1.5;
+    const light = new DirectionalLight("directional light", new Vector3(-0.2, -1, -0.2), scene);
+    light.position = new Vector3(-8, 50, 0);
+    light.intensity = 1.5;
 
     // const lightSphere = Mesh.CreateSphere("sphere", 10, 2, scene);
-    // lightSphere.position = light1.position;
+    // lightSphere.position = light.position;
     // lightSphere.material = new StandardMaterial("light", scene);
-    const shadowGenerator = new ShadowGenerator(1000, light1);
+
+    const shadowGenerator = new ShadowGenerator(1000, light);
     shadowGenerator.useExponentialShadowMap = true;
     shadowGenerator.useContactHardeningShadow = true;
     shadowGenerator.contactHardeningLightSizeUVRatio = 0.0075;
