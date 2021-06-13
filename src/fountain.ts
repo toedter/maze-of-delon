@@ -3,6 +3,8 @@ import flareTexture from "./assets/textures/flare.png"
 import {MarbleProceduralTexture} from "@babylonjs/procedural-textures";
 
 export class Fountain {
+  private mesh: Mesh;
+
   constructor(private scene: Scene, position: Vector3) {
     // This fountain is copied from https://playground.babylonjs.com/#KBS9I5#93
 
@@ -58,22 +60,25 @@ export class Fountain {
       new Vector3(0.15, 0.9, 0)
     ];
 
-    //Create lathed fountain
-    const fountain = MeshBuilder.CreateLathe("fountain", {
+    // Create lathed fountain
+    this.mesh = MeshBuilder.CreateLathe("fountain", {
       shape: fountainProfile,
       sideOrientation: Mesh.DOUBLESIDE
     });
-    fountain.position = position;
-    fountain.scaling = new Vector3(3,3,3);
+    this.mesh.position = position;
+    this.mesh.scaling = new Vector3(3,3,3);
 
     const marbleMaterial = new StandardMaterial("torus", scene);
     const marbleTexture = new MarbleProceduralTexture("marble", 512, scene);
     marbleTexture.numberOfTilesHeight = 3;
     marbleTexture.numberOfTilesWidth = 3;
     marbleMaterial.ambientTexture = marbleTexture;
-    fountain.material = marbleMaterial;
-
+    this.mesh.material = marbleMaterial;
 
     particleSystem.start();
+  }
+
+  getMesh(): Mesh {
+    return this.mesh;
   }
 }

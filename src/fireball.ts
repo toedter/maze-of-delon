@@ -1,17 +1,23 @@
 import {Mesh, MeshBuilder, NodeMaterial, Scene, ShadowDepthWrapper, ShadowGenerator, Vector3} from "@babylonjs/core";
 import {Area} from "amazer";
+import {Game} from "./game";
 
 export class FireBall {
   private readonly mesh: Mesh;
   private moveDirection: string;
+  private collider: Mesh;
 
-  constructor(private scene: Scene, private maze: Area, position: Vector3) {
+  constructor(private scene: Scene, private maze: Area, position: Vector3, private game: Game) {
     this.mesh = MeshBuilder.CreateSphere("fireball", {
       diameter: 3,
       segments: 32
     });
+
     this.mesh.position = position;
     this.moveDirection = 'up';
+
+    this.collider = new Mesh('fireball collider', scene);
+    this.collider.visibility = 0;
 
     scene.registerBeforeRender(() => this.move());
   }
@@ -87,6 +93,7 @@ export class FireBall {
         const rand = Math.floor(Math.random() * moveDirections.length)
         moveDirection = moveDirections[rand];
       }
+
     }
 
     let moveVector = new Vector3(0, 0, 0);
@@ -103,13 +110,23 @@ export class FireBall {
     this.moveDirection = moveDirection;
 
     this.mesh.moveWithCollisions(moveVector);
+
+    if (this.scene.activeCamera) {
+      this.collider.position.x = this.scene.activeCamera.position.x;
+      this.collider.position.z = this.scene.activeCamera.position.z;
+      this.collider.position.y = 2;
+
+      if (this.mesh.intersectsMesh(this.collider)) {
+        this.game.loseGame(this.scene);
+      }
+    }
   }
 
   getMesh(): Mesh {
     return this.mesh;
   }
 
-  static createFireballs(maze: Area, mazeCellSize: number, shadowGenerator: ShadowGenerator, scene: Scene): void {
+  static createFireballs(maze: Area, mazeCellSize: number, shadowGenerator: ShadowGenerator, scene: Scene, game: Game): void {
     NodeMaterial.ParseFromFileAsync('fireballMaterial', './assets/material/fireballMaterial.json', scene)
       .then((nodeMaterial) => {
         let fireBallCount = 0;
@@ -117,7 +134,7 @@ export class FireBall {
           const x = Math.floor(maze.width * Math.random());
           const y = Math.floor(maze.height * Math.random());
           if (maze.tiles[x][y].name === 'Floor') {
-            const fireBall = new FireBall(scene, maze, new Vector3(x * mazeCellSize - 100, 2, y * mazeCellSize - 90))
+            const fireBall = new FireBall(scene, maze, new Vector3(x * mazeCellSize - 100, 2, y * mazeCellSize - 90), game)
             shadowGenerator.addShadowCaster(fireBall.getMesh());
             fireBall.mesh.material = nodeMaterial;
             fireBall.mesh.material.shadowDepthWrapper = new ShadowDepthWrapper(nodeMaterial, scene);

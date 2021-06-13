@@ -21,13 +21,18 @@ import {GrassProceduralTexture} from "@babylonjs/procedural-textures";
 import {FireBall} from "./fireball";
 import {Fountain} from "./fountain";
 import {Player} from "./player";
+import {AdvancedDynamicTexture, Button} from "@babylonjs/gui";
+
+enum State { START = 0, GAME = 1, LOSE = 2, WIN = 3 }
 
 export class Game {
   private readonly canvas: HTMLCanvasElement;
   private readonly engine: Engine;
   private maze!: Area;
+  private state: State;
 
   constructor() {
+    this.state = State.START;
     this.canvas = <HTMLCanvasElement>document.getElementById("renderCanvas");
     this.engine = new Engine(this.canvas, true);
     const scene = this.createScene();
@@ -57,8 +62,6 @@ export class Game {
     const mazeSize = 35;
     const mazeCellSize = 5;
 
-    new Player(scene, this.canvas, mazeSize);
-
     // this.camera.position = new Vector3(0, 300, 0);
     // this.camera.target = new Vector3(0, 0, 1);
 
@@ -84,7 +87,7 @@ export class Game {
     for (let x = 0; x < (mazeSize + 2); x++) {
       for (let y = 0; y < (mazeSize + 2); y++) {
         if (!(x <= (mazeSize / 2 + 2) && x > mazeSize / 2 && y === 0)) {
-          if(!(x === (mazeSize+1)/2 && y === (mazeSize+1)/2))       {
+          if (!(x === (mazeSize + 1) / 2 && y === (mazeSize + 1) / 2)) {
             if (this.maze.tiles[x][y].name === 'Wall') {
               const box = MeshBuilder.CreateBox("box",
                 {width: mazeCellSize, height: mazeCellSize * 2, depth: mazeCellSize}, scene);
@@ -124,15 +127,14 @@ export class Game {
     skyboxMaterial.backFaceCulling = false;
     skyboxMaterial.rayleigh = 2;
 
-    // Sky mesh (box)
     const skybox = Mesh.CreateBox("skyBox", 1000.0, scene);
     skybox.material = skyboxMaterial;
 
-    FireBall.createFireballs(this.maze, 5, shadowGenerator, scene);
+    FireBall.createFireballs(this.maze, 5, shadowGenerator, scene, this);
 
-    const fountainX = (mazeSize+1)/2 * mazeCellSize - 100;
-    const fountainZ = (mazeSize+1)/2 * mazeCellSize - 90;
-    new Fountain(scene, new Vector3(fountainX, 0, fountainZ) );
+    const fountainX = (mazeSize + 1) / 2 * mazeCellSize - 100;
+    const fountainZ = (mazeSize + 1) / 2 * mazeCellSize - 90;
+    const fountain = new Fountain(scene, new Vector3(fountainX, 0, fountainZ));
 
     // // hide/show the Inspector
     // window.addEventListener("keydown", (event) => {
@@ -148,6 +150,8 @@ export class Game {
     // scene.debugLayer.show({
     //   embedMode: true,
     // });
+
+    new Player(scene, this.canvas, mazeSize, fountain);
 
     return scene;
   }
@@ -167,5 +171,39 @@ export class Game {
     shadowGenerator.contactHardeningLightSizeUVRatio = 0.0075;
 
     return shadowGenerator;
+  }
+
+  loseGame(scene: Scene): void {
+    if (this.state !== State.LOSE) {
+      this.state = State.LOSE;
+      // const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI");
+      // const rect1 = new Rectangle();
+      // rect1.alpha = 0;
+      // rect1.background = "Black";
+      //
+      // advancedTexture.addControl(rect1);
+      //
+      // scene.registerBeforeRender( () => {
+      //   rect1.alpha += 0.01;
+      // })
+
+      const gui = AdvancedDynamicTexture.CreateFullscreenUI("myUI");
+      const button: Button = Button.CreateSimpleButton("lose button", "You died!\nNext time try to avoid the fire balls.\n\nClick to restart game");
+      button.width = 0.4;
+      button.height = 0.4;
+      button.color = "white";
+      // button.fontSize = 50;
+      button.cornerRadius = 20;
+      button.background = "red";
+      button.onPointerUpObservable.add(() => {
+        gui.removeControl(button);
+        const startPosition = new Vector3(-10, 3, -(this.maze.width + 65));
+        if (scene.activeCamera) {
+          this.state = State.GAME;
+          scene.activeCamera.position = startPosition;
+        }
+      });
+      gui.addControl(button);
+    }
   }
 }
