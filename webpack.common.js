@@ -33,10 +33,6 @@ module.exports = {
         loader: "ts-loader",
       },
       {
-        test: /\.(wav|mp3)$/,
-        loader: "file-loader",
-      },
-      {
         test: /\.(png|jpg|gif|env|glb|stl)$/i,
         use: [
           {
