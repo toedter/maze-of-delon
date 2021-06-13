@@ -19,17 +19,18 @@ jobs:
           node-version: '14'
 
       # See: https://github.com/actions/cache/blob/main/examples.md#node---npm
-      - name: Use Node.js cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+#      - name: Use Node.js cache
+#        uses: actions/cache@v2
+#        with:
+#          path: ~/.npm
+#          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+#          restore-keys: |
+#            ${{ runner.os }}-node-
 
       # `--prefer-offline` gives cache priority
       - name: Install dependencies
-        run: npm install --prefer-offline --frozen-lockfile
+#        run: npm install --prefer-offline --frozen-lockfile
+        run: npm install
 
       - name: Lint application
         run: npm run lint
