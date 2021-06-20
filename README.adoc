@@ -6,9 +6,11 @@ image:https://img.shields.io/badge/license-MIT-blue.svg["MIT", link="http://toed
 = The Maze of Delon
 
 The Maze of Delon is my first experiment with https://babylonjs.com[Babylon.js] and https://doc.babylonjs.com/divingDeeper/webXR/introToWebXR[Web based Virtual Reality (WebXR)].
-This is in a very early stage, please stay tuned
+This is in a very early stage, please stay tuned.
 
 == Demo
+
+image::maze-of-delon.jpg[]
 
 Here you find a demo of the current snapshot.
 You control the camera with the mouse, and the cursor keys.
