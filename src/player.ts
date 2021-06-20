@@ -10,7 +10,7 @@ import {
   WebXRCamera
 } from "@babylonjs/core";
 import {Fountain} from "./fountain";
-import {AdvancedDynamicTexture, Button} from "@babylonjs/gui";
+import {Game, State} from "./game";
 
 export class Player {
   private isMoving = false;
@@ -19,20 +19,25 @@ export class Player {
 
   private readonly collider: Mesh;
   private readonly fountainMesh: Mesh;
+  private readonly startPosition: Vector3;
 
   private won: boolean;
 
-  constructor(private scene: Scene, canvas: HTMLCanvasElement, private mazeSize: number, private fountain: Fountain) {
+  constructor(private scene: Scene,
+              canvas: HTMLCanvasElement,
+              private mazeSize: number,
+              private fountain: Fountain,
+              private game: Game) {
     this.fountainMesh = fountain.getMesh();
     this.won = false;
 
     this.collider = new Mesh('collider', scene);
     this.collider.visibility = 0;
 
-    const startPosition = new Vector3(-10, 3, -(mazeSize + 65));
+    this.startPosition = new Vector3(-5, 3, -(mazeSize + 70));
     // const startPosition = new Vector3(this.fountainMesh.position.x + 3, 2, this.fountainMesh.position.z);
 
-    const camera = new FreeCamera("playerCamera", startPosition, scene);
+    const camera = new FreeCamera("playerCamera", this.startPosition.clone(), scene);
     camera.checkCollisions = true;
     camera.minZ = 0.01;
     camera.ellipsoid = new Vector3(1, 1.5, 1);
@@ -94,8 +99,8 @@ export class Player {
   }
 
   private move() {
-    if(this.scene.activeCamera instanceof WebXRCamera) {
-      if (this.isMoving) {
+    if (this.scene.activeCamera instanceof WebXRCamera) {
+      if (this.isMoving && this.game?.getState() === State.GAME) {
         this.collider.position = this.xrCamera.position
         const position = this.xrCamera.getFrontPosition(0.1);
         this.collider.lookAt(position);
@@ -107,7 +112,7 @@ export class Player {
         this.collider.moveWithCollisions(forwards);
 
         if (this.fountainMesh.intersectsMesh(this.collider)) {
-          this.showWinGui();
+          this.game.win(this.scene);
         }
       }
     } else {
@@ -116,7 +121,7 @@ export class Player {
       this.collider.position.y = 0;
 
       if (this.fountainMesh.intersectsMesh(this.collider)) {
-        this.showWinGui();
+        this.game.win(this.scene);
       }
     }
   }
@@ -130,9 +135,13 @@ export class Player {
       Animation.ANIMATIONTYPE_FLOAT,
       Animation.ANIMATIONLOOPMODE_CYCLE);
 
+    let target = camera.position.y + direction;
+    if (target < 1) {
+      target = 1;
+    }
     const keys = [];
     keys.push({frame: 0, value: camera.position.y});
-    keys.push({frame: 10, value: camera.position.y + direction});
+    keys.push({frame: 10, value: target});
 
     animation.setKeys(keys);
 
@@ -145,28 +154,14 @@ export class Player {
     scene.beginAnimation(camera, 0, 20, false);
   }
 
-  private showWinGui() {
-    if (!this.won) {
-      this.won = true;
-
-      const gui = AdvancedDynamicTexture.CreateFullscreenUI("myUI");
-      const button: Button = Button.CreateSimpleButton("win button", "Congratulation!\nYou found your way through the maze.\n\nClick to restart game");
-      button.width = 0.4;
-      button.height = 0.4;
-      button.color = "white";
-      button.fontSize = 50;
-      button.cornerRadius = 20;
-      button.background = "green";
-      button.onPointerUpObservable.add(() => {
-        gui.removeControl(button);
-        const startPosition = new Vector3(-10, 3, -(this.mazeSize + 65));
-        this.camera.position = startPosition;
-      });
-      gui.addControl(button);
-    }
-  }
-
   hasWon(): boolean {
     return this.won;
+  }
+
+  resetToStartPosition(): void {
+    const camera = this.scene.activeCamera;
+    if (camera) {
+      camera.position = this.startPosition.clone();
+    }
   }
 }

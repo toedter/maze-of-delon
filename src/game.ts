@@ -9,26 +9,29 @@ import {
   ShadowGenerator,
   StandardMaterial,
   Texture,
-  Vector3
+  Vector3,
+  WebXRCamera
 } from "@babylonjs/core";
 
 import amazer, {AmazerBuilder, Area, Emmure, RandomizedPrim} from "amazer";
 
-import wallTexture from "./assets/textures/floor.png"
+import wallTexture from "./assets/textures/wall.png"
+import wallBumpTexture from "./assets/textures/wall-bump.png"
 import groundHeightMap from "./assets/heightmaps/villageheightmap.png"
 import {SkyMaterial} from "@babylonjs/materials";
 import {GrassProceduralTexture} from "@babylonjs/procedural-textures";
 import {FireBall} from "./fireball";
 import {Fountain} from "./fountain";
 import {Player} from "./player";
-import {AdvancedDynamicTexture, Button} from "@babylonjs/gui";
+import {Button3D, GUI3DManager, StackPanel3D, TextBlock} from "@babylonjs/gui";
 
-enum State { START = 0, GAME = 1, LOSE = 2, WIN = 3 }
+export enum State { START = 0, GAME = 1, LOSE = 2, WIN = 3 }
 
 export class Game {
   private readonly canvas: HTMLCanvasElement;
   private readonly engine: Engine;
   private maze!: Area;
+  private player!: Player;
   private state: State;
 
   constructor() {
@@ -39,10 +42,15 @@ export class Game {
 
     const divFps = document.getElementById("fps");
 
+    this.start(scene);
+
     // Register a render loop to repeatedly render the scene
     scene.executeWhenReady(() => {
       this.engine.runRenderLoop(() => {
         scene.render();
+        if(this.state === State.LOSE) {
+          this.lose(scene);
+        }
         if (divFps) {
           divFps.innerHTML = this.engine.getFps().toFixed() + " fps";
         }
@@ -76,6 +84,10 @@ export class Game {
     boxTexture.uScale = 1;
     boxMat.diffuseTexture = boxTexture;
     boxMat.specularColor = new Color3(0.2, 0.2, 0.2);
+    const boxBumpTexture = new Texture(wallBumpTexture, scene);
+    boxBumpTexture.vScale = 1;
+    boxBumpTexture.uScale = 1;
+    boxMat.bumpTexture = boxBumpTexture;
 
     const mazeConfig = (<AmazerBuilder>amazer()).withSize({width: mazeSize, height: mazeSize})
       .using(RandomizedPrim)
@@ -151,7 +163,7 @@ export class Game {
     //   embedMode: true,
     // });
 
-    new Player(scene, this.canvas, mazeSize, fountain);
+    this.player = new Player(scene, this.canvas, mazeSize, fountain, this);
 
     return scene;
   }
@@ -173,37 +185,114 @@ export class Game {
     return shadowGenerator;
   }
 
-  loseGame(scene: Scene): void {
-    if (this.state !== State.LOSE) {
-      this.state = State.LOSE;
-      // const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI");
-      // const rect1 = new Rectangle();
-      // rect1.alpha = 0;
-      // rect1.background = "Black";
-      //
-      // advancedTexture.addControl(rect1);
-      //
-      // scene.registerBeforeRender( () => {
-      //   rect1.alpha += 0.01;
-      // })
 
-      const gui = AdvancedDynamicTexture.CreateFullscreenUI("myUI");
-      const button: Button = Button.CreateSimpleButton("lose button", "You died!\nNext time try to avoid the fire balls.\n\nClick to restart game");
-      button.width = 0.4;
-      button.height = 0.4;
-      button.color = "white";
-      // button.fontSize = 50;
-      button.cornerRadius = 20;
-      button.background = "red";
-      button.onPointerUpObservable.add(() => {
-        gui.removeControl(button);
-        const startPosition = new Vector3(-10, 3, -(this.maze.width + 65));
-        if (scene.activeCamera) {
-          this.state = State.GAME;
-          scene.activeCamera.position = startPosition;
-        }
-      });
-      gui.addControl(button);
+  start(scene: Scene): void {
+    this.state = State.START;
+    this.player.resetToStartPosition();
+
+    const manager = new GUI3DManager(scene);
+    const panel = new StackPanel3D();
+
+    manager.addControl(panel);
+    const camera = scene.activeCamera;
+    if (camera) {
+      panel.position.z = camera?.position.z + 5;
+      panel.position.x = camera?.position.x;
+      if (!(camera instanceof WebXRCamera)) {
+        camera.detachControl(this.canvas);
+        panel.position.y = camera?.position.y;
+      } else {
+        panel.position.y = 1;
+      }
     }
+
+    const button = new Button3D("greeting Button");
+    const greetingText = new TextBlock();
+    greetingText.text = 'Welcome to the Maze of Delon!\n\n\n'
+      + 'Enter the maze and search\nfor the fountain of Magic.\n'
+      + "And don't touch the Fireballs...\n\n\n"
+      + 'Click here to start the game.';
+    greetingText.color = "white";
+    greetingText.fontSize = 15;
+    button.content = greetingText;
+    panel.addControl(button);
+
+    button.onPointerUpObservable.add(() => {
+      manager.dispose();
+      camera?.attachControl(this.canvas, false);
+      this.state = State.GAME;
+    });
+  }
+
+  lose(scene: Scene): void {
+    if (this.state === State.GAME) {
+      this.state = State.LOSE;
+      this.player.resetToStartPosition();
+      const manager = new GUI3DManager(scene);
+      const panel = new StackPanel3D();
+
+      manager.addControl(panel);
+      const camera = scene.activeCamera;
+      if (camera) {
+        panel.position.z = camera?.position.z + 5;
+        panel.position.x = camera?.position.x;
+        panel.position.y = camera?.position.y;
+      }
+
+      const button = new Button3D("lose Button");
+      const greetingText = new TextBlock();
+      greetingText.text = 'You died!\n\n\n'
+        + 'Next time try to avoid the fire balls.\n\n\n'
+        + 'Click here to restart the game.';
+      greetingText.color = "white";
+      greetingText.fontSize = 15;
+      button.content = greetingText;
+      panel.addControl(button);
+
+      button.onPointerUpObservable.add(() => {
+        manager.dispose();
+        window.location.reload();
+      });
+    }
+  }
+
+  win(scene: Scene): void {
+    if (this.state !== State.WIN) {
+      this.state = State.WIN;
+      this.player.resetToStartPosition();
+
+      const manager = new GUI3DManager(scene);
+      const panel = new StackPanel3D();
+
+      manager.addControl(panel);
+      const camera = scene.activeCamera;
+      if (camera) {
+        panel.position.z = camera?.position.z + 5;
+        panel.position.x = camera?.position.x;
+        if (camera instanceof WebXRCamera) {
+          panel.position.y = 1;
+        } else {
+          panel.position.y = camera?.position.y;
+        }
+      }
+
+      const button = new Button3D("win Button");
+      const winText = new TextBlock();
+      winText.text = 'CONGRATULATIONS!\n\n\n'
+        + 'You won the game!.\n\n\n'
+        + 'Click here to restart the game.';
+      winText.color = "white";
+      winText.fontSize = 15;
+      button.content = winText;
+      panel.addControl(button);
+
+      button.onPointerUpObservable.add(() => {
+        window.location.reload();
+      });
+    }
+  }
+
+  getState(): State {
+    return this.state
   }
 }
