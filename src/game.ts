@@ -83,11 +83,14 @@ export class Game {
     boxTexture.vScale = 1;
     boxTexture.uScale = 1;
     boxMat.diffuseTexture = boxTexture;
-    boxMat.specularColor = new Color3(0.2, 0.2, 0.2);
+    boxMat.specularColor = new Color3(0.3, 0.3, 0.3);
     const boxBumpTexture = new Texture(wallBumpTexture, scene);
     boxBumpTexture.vScale = 1;
     boxBumpTexture.uScale = 1;
     boxMat.bumpTexture = boxBumpTexture;
+    boxMat.invertNormalMapX = true;
+    boxMat.invertRefractionY = true;
+    // boxMat.invertNormalMapY = true;
 
     const mazeConfig = (<AmazerBuilder>amazer()).withSize({width: mazeSize, height: mazeSize})
       .using(RandomizedPrim)
@@ -123,7 +126,7 @@ export class Game {
     // Create large ground for valley environment
     const largeGroundMat = new StandardMaterial("largeGroundMat", scene);
     largeGroundMat.ambientTexture = new GrassProceduralTexture("grassTexture", 5000, scene);
-    largeGroundMat.specularColor = new Color3(0.2, 0.2, 0.2);
+    largeGroundMat.specularColor = new Color3(0.1, 0.1, 0.1);
 
     const largeGround = MeshBuilder.CreateGroundFromHeightMap(
       "largeGround", groundHeightMap,
@@ -134,8 +137,8 @@ export class Game {
 
 
     const skyboxMaterial = new SkyMaterial("skyMaterial", scene);
-    skyboxMaterial.inclination = 0.2;
-    skyboxMaterial.azimuth = 0.19;
+    skyboxMaterial.inclination = 0.1;
+    skyboxMaterial.azimuth = 0.09;
     skyboxMaterial.backFaceCulling = false;
     skyboxMaterial.rayleigh = 2;
 
