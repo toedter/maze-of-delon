@@ -15,6 +15,7 @@ import {
 
 import amazer, {AmazerBuilder, Area, Emmure, RandomizedPrim} from "amazer";
 
+import groundTexture from "./assets/textures/ground.jpg"
 import wallTexture from "./assets/textures/wall.png"
 import wallBumpTexture from "./assets/textures/wall-bump.png"
 import groundHeightMap from "./assets/heightmaps/villageheightmap.png"
@@ -112,6 +113,7 @@ export class Game {
               box.material = boxMat;
               box.checkCollisions = true;
               boxes.push(box);
+              box.receiveShadows = true;
               // shadowGenerator.addShadowCaster(box);
             }
           }
@@ -132,6 +134,15 @@ export class Game {
       "largeGround", groundHeightMap,
       {width: 500, height: 500, subdivisions: 100, minHeight: 0, maxHeight: 8});
     largeGround.material = largeGroundMat;
+
+    const groundMaterial = new StandardMaterial("ground", scene);
+    groundMaterial.diffuseTexture = new Texture(groundTexture, scene);
+    (groundMaterial.diffuseTexture as Texture).uScale = 30;
+    (groundMaterial.diffuseTexture as Texture).vScale = 30;
+    groundMaterial.specularColor = new Color3(0, 0, 0);
+
+    largeGround.material = groundMaterial;
+
     largeGround.checkCollisions = true;
     largeGround.receiveShadows = true;
 
