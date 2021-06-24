@@ -25,6 +25,7 @@ import {FireBall} from "./fireball";
 import {Fountain} from "./fountain";
 import {Player} from "./player";
 import {Button3D, GUI3DManager, StackPanel3D, TextBlock} from "@babylonjs/gui";
+import {LoadingScreen} from "./loading-screen";
 
 export enum State { START = 0, GAME = 1, LOSE = 2, WIN = 3 }
 
@@ -39,6 +40,11 @@ export class Game {
     this.state = State.START;
     this.canvas = <HTMLCanvasElement>document.getElementById("renderCanvas");
     this.engine = new Engine(this.canvas, true);
+
+    const loadingScreen = new LoadingScreen("The Maze of Delon is loading...");
+    this.engine.loadingScreen = loadingScreen;
+    this.engine.displayLoadingUI();
+
     const scene = this.createScene();
 
     const divFps = document.getElementById("fps");
@@ -47,6 +53,7 @@ export class Game {
     SceneOptimizer.OptimizeAsync(scene);
 
     scene.executeWhenReady(() => {
+      this.engine.hideLoadingUI();
       this.engine.runRenderLoop(() => {
         scene.render();
         if(this.state === State.LOSE) {
