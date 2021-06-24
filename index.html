@@ -23,4 +23,17 @@
       right: 10px;
       width: 60px;
       height: 20px;
-    }</style><script defer="defer" src="game.js"></script></head><body><div id="fps">0</div><canvas id="renderCanvas" touch-action="none"></canvas></body></html>
+      display: none;
+    }
+
+    #loadingScreen {
+      position: absolute;
+      top: 100px;
+      width: 100%;
+      height: 100%;
+      color: white;
+      font-size: 50px;
+      text-align: center;
+      background-color: rgba(52, 50, 50, 0.8);
+      z-index: 9999;
+    }</style><script defer="defer" src="game.js"></script></head><body><div id="fps"></div><div id="loadingScreen"></div><canvas id="renderCanvas" touch-action="none"></canvas></body></html>
