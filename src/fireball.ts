@@ -1,4 +1,14 @@
-import {Mesh, MeshBuilder, NodeMaterial, Scene, ShadowDepthWrapper, ShadowGenerator, Vector3} from "@babylonjs/core";
+import {
+  Color3,
+  Mesh,
+  MeshBuilder,
+  NodeMaterial,
+  PointLight,
+  Scene,
+  ShadowDepthWrapper,
+  ShadowGenerator,
+  Vector3
+} from "@babylonjs/core";
 import {Area} from "amazer";
 import {Game, State} from "./game";
 
@@ -20,6 +30,13 @@ export class FireBall {
     this.collider.visibility = 0;
 
     scene.registerBeforeRender(() => this.move());
+
+    const fireBallLight = new PointLight("pointLight", new Vector3(0, 0, 0), scene);
+    fireBallLight.range = 5;
+    fireBallLight.intensity = 3;
+    fireBallLight.diffuse = new Color3(1, 0, 0);
+    fireBallLight.specular = new Color3(1, 1, 0);
+    fireBallLight.parent = this.mesh;
   }
 
   private move() {
@@ -98,7 +115,7 @@ export class FireBall {
       }
 
       let moveVector = new Vector3(0, 0, 0);
-      const speed = 0.1;
+      const speed = 0.2;
       if (moveDirection === 'up') {
         moveVector = new Vector3(0, 0, speed);
       } else if (moveDirection === 'right') {
@@ -132,7 +149,7 @@ export class FireBall {
     NodeMaterial.ParseFromFileAsync('fireballMaterial', './assets/material/fireballMaterial.json', scene)
       .then((nodeMaterial) => {
         let fireBallCount = 0;
-        while (fireBallCount < 10) {
+        while (fireBallCount < 5) {
           const x = Math.floor(maze.width * Math.random());
           const y = Math.floor(maze.height * Math.random());
           if (maze.tiles[x][y].name === 'Floor') {

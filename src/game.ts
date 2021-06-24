@@ -5,7 +5,7 @@ import {
   HemisphericLight,
   Mesh,
   MeshBuilder,
-  Scene,
+  Scene, SceneOptimizer,
   ShadowGenerator,
   StandardMaterial,
   Texture,
@@ -44,8 +44,8 @@ export class Game {
     const divFps = document.getElementById("fps");
 
     this.start(scene);
+    SceneOptimizer.OptimizeAsync(scene);
 
-    // Register a render loop to repeatedly render the scene
     scene.executeWhenReady(() => {
       this.engine.runRenderLoop(() => {
         scene.render();
@@ -92,6 +92,7 @@ export class Game {
     boxMat.invertNormalMapX = true;
     boxMat.invertRefractionY = true;
     // boxMat.invertNormalMapY = true;
+    boxMat.maxSimultaneousLights = 7;
 
     const mazeConfig = (<AmazerBuilder>amazer()).withSize({width: mazeSize, height: mazeSize})
       .using(RandomizedPrim)
@@ -113,7 +114,7 @@ export class Game {
               box.material = boxMat;
               box.checkCollisions = true;
               boxes.push(box);
-              box.receiveShadows = true;
+              // box.receiveShadows = true;
               // shadowGenerator.addShadowCaster(box);
             }
           }
@@ -123,6 +124,8 @@ export class Game {
     const mazeMesh = Mesh.MergeMeshes(boxes);
     if (mazeMesh) {
       shadowGenerator.addShadowCaster(mazeMesh);
+      // mazeMesh.receiveShadows = true;
+      mazeMesh.freezeWorldMatrix();
     }
 
     // Create large ground for valley environment
