@@ -9,6 +9,7 @@ declare module '*.stl';
 
 // sounds
 declare module '*.wav';
+declare module '*.mp3';
 
 // material
 declare module '*.json';

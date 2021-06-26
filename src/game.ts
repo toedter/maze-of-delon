@@ -5,8 +5,10 @@ import {
   HemisphericLight,
   Mesh,
   MeshBuilder,
-  Scene, SceneOptimizer,
+  Scene,
+  SceneOptimizer,
   ShadowGenerator,
+  Sound,
   StandardMaterial,
   Texture,
   Vector3,
@@ -19,6 +21,7 @@ import groundTexture from "./assets/textures/ground.jpg"
 import wallTexture from "./assets/textures/wall.png"
 import wallBumpTexture from "./assets/textures/wall-bump.png"
 import groundHeightMap from "./assets/heightmaps/villageheightmap.png"
+import music from "./assets/sounds/Nyoko-Flowing_Into_The_Darkness.mp3"
 import {SkyMaterial} from "@babylonjs/materials";
 import {GrassProceduralTexture} from "@babylonjs/procedural-textures";
 import {FireBall} from "./fireball";
@@ -41,8 +44,7 @@ export class Game {
     this.canvas = <HTMLCanvasElement>document.getElementById("renderCanvas");
     this.engine = new Engine(this.canvas, true);
 
-    const loadingScreen = new LoadingScreen("The Maze of Delon is loading...");
-    this.engine.loadingScreen = loadingScreen;
+    this.engine.loadingScreen = new LoadingScreen("The Maze of Delon is loading...");
     this.engine.displayLoadingUI();
 
     const scene = this.createScene();
@@ -51,6 +53,11 @@ export class Game {
 
     this.start(scene);
     SceneOptimizer.OptimizeAsync(scene);
+
+    new Sound("Music", music, scene, null, {
+      loop: true,
+      autoplay: true
+    });
 
     scene.executeWhenReady(() => {
       this.engine.hideLoadingUI();

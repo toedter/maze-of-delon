@@ -32,6 +32,11 @@ The app will automatically reload if you change any of the source files.
 Run `npm run build` to build the project in production mode.
 The build artifacts will be stored in the `dist/` directory.
 
+== Acknowledgements
+
+* Background music: https://www.youtube.com/watch?v=p-S83Dqxq4g[Flowing into the Darkness] by Nyoko
+* All textures and assets by Babylon.js or provided by Babylon.js community
+
 [[license]]
 == License
 
