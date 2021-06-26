@@ -68,34 +68,34 @@ export class Player {
             triggerComponent.onButtonStateChangedObservable.add(() => {
               this.isMoving = triggerComponent.pressed;
             });
-            const triggerComponent2 = motionController.getComponent(xr_ids[3]); // a button
-            triggerComponent2.onButtonStateChangedObservable.add(() => {
-              if (triggerComponent2.pressed) {
-                this.cameraJump(scene, this.xrCamera, 50);
-              } else {
-                this.cameraJump(scene, this.xrCamera, -50);
-              }
-            });
+            // const triggerComponent2 = motionController.getComponent(xr_ids[3]); // a button
+            // triggerComponent2.onButtonStateChangedObservable.add(() => {
+            //   if (triggerComponent2.pressed) {
+            //     this.cameraJump(scene, this.xrCamera, 50);
+            //   } else {
+            //     this.cameraJump(scene, this.xrCamera, -50);
+            //   }
+            // });
           }
         });
       });
     })
 
-    window.addEventListener("keydown", (event) => {
-      switch (event.code) {
-        case 'Space':
-          this.cameraJump(scene, camera, 200);
-          break;
-      }
-    }, false);
-
-    window.addEventListener("keyup", (event) => {
-      switch (event.code) {
-        case 'Space':
-          this.cameraJump(scene, camera, -200);
-          break;
-      }
-    }, false);
+    // window.addEventListener("keydown", (event) => {
+    //   switch (event.code) {
+    //     case 'Space':
+    //       this.cameraJump(scene, camera, 200);
+    //       break;
+    //   }
+    // }, false);
+    //
+    // window.addEventListener("keyup", (event) => {
+    //   switch (event.code) {
+    //     case 'Space':
+    //       this.cameraJump(scene, camera, -200);
+    //       break;
+    //   }
+    // }, false);
   }
 
   private move() {
