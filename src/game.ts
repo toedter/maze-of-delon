@@ -116,10 +116,11 @@ export class Game {
     this.maze = amazer(mazeConfig).generate();
 
     const boxes: Mesh[] = [];
+    const mazeHalf = mazeSize / 2;
     for (let x = 0; x < (mazeSize + 2); x++) {
       for (let y = 0; y < (mazeSize + 2); y++) {
-        if (!(x <= (mazeSize / 2 + 2) && x > mazeSize / 2 && y === 0)) {
-          if (!(x === (mazeSize + 1) / 2 && y === (mazeSize + 1) / 2)) {
+        if (!(x <= (mazeHalf + 2) && x > mazeHalf && y === 0)) {
+          if (!(x <= (mazeHalf + 2) && x > mazeHalf -1 && y < mazeHalf + 2 && y > mazeHalf -1 )) {
             if (this.maze.tiles[x][y].name === 'Wall') {
               const box = MeshBuilder.CreateBox("box",
                 {width: mazeCellSize, height: mazeCellSize * 2, depth: mazeCellSize}, scene);
