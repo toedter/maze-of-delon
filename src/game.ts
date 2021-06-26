@@ -56,7 +56,8 @@ export class Game {
 
     new Sound("Music", music, scene, null, {
       loop: true,
-      autoplay: true
+      autoplay: true,
+      volume: 0.3
     });
 
     scene.executeWhenReady(() => {

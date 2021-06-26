@@ -6,16 +6,18 @@ import {
   PointLight,
   Scene,
   ShadowDepthWrapper,
-  ShadowGenerator,
+  ShadowGenerator, Sound,
   Vector3
 } from "@babylonjs/core";
 import {Area} from "amazer";
 import {Game, State} from "./game";
+import FireBallSound from "./assets/sounds/flames.mp3"
 
 export class FireBall {
   private readonly mesh: Mesh;
   private moveDirection: string;
   private collider: Mesh;
+  private sound: Sound;
 
   constructor(private scene: Scene, private maze: Area, position: Vector3, private game: Game) {
     this.mesh = MeshBuilder.CreateSphere("fireball", {
@@ -37,10 +39,22 @@ export class FireBall {
     fireBallLight.diffuse = new Color3(1, 0, 0);
     fireBallLight.specular = new Color3(1, 1, 0);
     fireBallLight.parent = this.mesh;
+
+    this.sound = new Sound("fireball sound", FireBallSound, scene, null, {
+      loop: true,
+      volume: 0.5,
+      spatialSound: true
+      // maxDistance: 60,
+      // refDistance: 20
+    });
+    this.sound.attachToMesh(this.mesh);
   }
 
   private move() {
     if (this.game.getState() === State.GAME) {
+      if (!this.sound.isPlaying) {
+        this.sound.play();
+      }
       let moveDirection = this.moveDirection;
 
       const isCloseToDirectionChange = (Math.round(this.mesh.position.z) % 5 === 0 && (Math.abs(Math.round(this.mesh.position.z) - this.mesh.position.z)) < 0.02)
@@ -115,7 +129,7 @@ export class FireBall {
       }
 
       let moveVector = new Vector3(0, 0, 0);
-      const speed = 0.2;
+      const speed = 0.1;
       if (moveDirection === 'up') {
         moveVector = new Vector3(0, 0, speed);
       } else if (moveDirection === 'right') {
