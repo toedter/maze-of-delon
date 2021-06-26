@@ -35,7 +35,7 @@ export class Player {
     this.collider.visibility = 0;
 
     this.startPosition = new Vector3(-5, 3, -(mazeSize + 70));
-    // const startPosition = new Vector3(this.fountainMesh.position.x + 3, 2, this.fountainMesh.position.z);
+    // this.startPosition = new Vector3(this.fountainMesh.position.x + 3, 2, this.fountainMesh.position.z);
 
     const camera = new FreeCamera("playerCamera", this.startPosition.clone(), scene);
     camera.checkCollisions = true;

@@ -152,6 +152,10 @@ export class FireBall {
           this.game.lose(this.scene);
         }
       }
+    } else {
+      if (this.sound.isPlaying) {
+        this.sound.stop();
+      }
     }
   }
 

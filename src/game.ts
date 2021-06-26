@@ -22,6 +22,8 @@ import wallTexture from "./assets/textures/wall.png"
 import wallBumpTexture from "./assets/textures/wall-bump.png"
 import groundHeightMap from "./assets/heightmaps/villageheightmap.png"
 import music from "./assets/sounds/Nyoko-Flowing_Into_The_Darkness.mp3"
+import winSound from "./assets/sounds/win.wav"
+import loseSound from "./assets/sounds/lose.wav"
 import {SkyMaterial} from "@babylonjs/materials";
 import {GrassProceduralTexture} from "@babylonjs/procedural-textures";
 import {FireBall} from "./fireball";
@@ -38,6 +40,7 @@ export class Game {
   private maze!: Area;
   private player!: Player;
   private state: State;
+  private backgroundMusic: Sound;
 
   constructor() {
     this.state = State.START;
@@ -54,7 +57,7 @@ export class Game {
     this.start(scene);
     SceneOptimizer.OptimizeAsync(scene);
 
-    new Sound("Music", music, scene, null, {
+    this.backgroundMusic = new Sound("Music", music, scene, null, {
       loop: true,
       autoplay: true,
       volume: 0.3
@@ -165,7 +168,6 @@ export class Game {
     largeGround.checkCollisions = true;
     largeGround.receiveShadows = true;
 
-
     const skyboxMaterial = new SkyMaterial("skyMaterial", scene);
     skyboxMaterial.inclination = 0.1;
     skyboxMaterial.azimuth = 0.09;
@@ -259,6 +261,12 @@ export class Game {
 
   lose(scene: Scene): void {
     if (this.state === State.GAME) {
+      this.backgroundMusic.stop(0);
+      new Sound("lose sound", loseSound, scene, null, {
+        autoplay: true,
+        volume: 0.3
+      });
+
       this.state = State.LOSE;
       this.player.resetToStartPosition();
       const manager = new GUI3DManager(scene);
@@ -291,8 +299,13 @@ export class Game {
 
   win(scene: Scene): void {
     if (this.state !== State.WIN) {
+      this.backgroundMusic.stop(0);
+      new Sound("win sound", winSound, scene, null, {
+        autoplay: true,
+        volume: 0.3
+      });
+
       this.state = State.WIN;
-      this.player.resetToStartPosition();
 
       const manager = new GUI3DManager(scene);
       const panel = new StackPanel3D();

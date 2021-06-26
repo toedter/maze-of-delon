@@ -34,7 +34,15 @@ The build artifacts will be stored in the `dist/` directory.
 
 == Acknowledgements
 
-* Background music: https://www.youtube.com/watch?v=p-S83Dqxq4g[Flowing into the Darkness] by Nyoko
+* Background music
+** Song : Nyoko - Flowing Into The Darkness
+** promoted by MUSIC FOR YOUTUBE https://youtu.be/p-S83Dqxq4g
+* Win sound:
+** By xtrgamr
+** https://freesound.org/people/xtrgamr/sounds/244536/ licensed under https://creativecommons.org/licenses/by/3.0/[CC-BY 3.0]
+* Lose sound:
+** By LittleRobotSoundFactory
+** https://freesound.org/people/LittleRobotSoundFactory/sounds/270529/ licensed under https://creativecommons.org/licenses/by/3.0/[CC-BY 3.0]
 * All textures and assets by Babylon.js or provided by Babylon.js community
 
 [[license]]
