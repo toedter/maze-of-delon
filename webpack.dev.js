@@ -6,10 +6,8 @@ module.exports = merge(common, {
     mode: 'development',
     devtool: 'inline-source-map',
     devServer: {
-        contentBase: path.resolve("./src"),
         compress: true,
         hot: true,
-        publicPath: '/',
         open: true
     },
 });
