@@ -12,11 +12,11 @@
   "author": "Kai Tödter",
   "license": "MIT",
   "dependencies": {
-    "@babylonjs/core": "^5.37.0",
-    "@babylonjs/loaders": "^5.37.0",
-    "@babylonjs/materials": "^5.37.0",
-    "@babylonjs/procedural-textures": "^5.37.0",
-    "@babylonjs/gui": "^5.37.0",
+    "@babylonjs/core": "^6.1.0",
+    "@babylonjs/loaders": "^6.1.0",
+    "@babylonjs/materials": "^6.1.0",
+    "@babylonjs/procedural-textures": "^6.1.0",
+    "@babylonjs/gui": "^6.1.0",
     "amazer": "^0.1.3",
     "eslint": "^8.12.0"
   },
